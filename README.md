@@ -111,6 +111,68 @@ Traditional contracts are deterministic. GenLayer contracts are **probabilistic 
    - Multi-source data cross-validation.
    - Reputation system for data providers.
 
+
+7. **Protocol Hardening Recommendations**
+
+### Hardened Version of the Example Contract
+
+Here is the **secure** version applying multiple recommendations:
+
+```python
+# Hardened Intelligent Contract - Secure Escrow with AI Judge
+from genlayer import Contract, oracle, llm_judge, sanitize_input, deterministic_verify
+
+class SecureEscrow(Contract):
+    def __init__(self):
+        self.buyer = None
+        self.seller = None
+        self.amount = 0
+        self.dispute_description = ""
+        self.audit_log = []
+
+    def create_escrow(self, seller, amount):
+        self.buyer = msg.sender
+        self.seller = seller
+        self.amount = amount
+
+    def raise_dispute(self, description: str):
+        # 1. Input Sanitization
+        safe_desc = sanitize_input(description)
+        self.dispute_description = safe_desc
+        
+        # 2. Multi-LLM Verification + Deterministic Fallback
+        verdicts = []
+        for model in ["llama3", "claude", "gpt4o-mini"]:
+            verdict = llm_judge(
+                prompt=f"Dispute analysis only: {safe_desc}. Output strictly 'buyer' or 'seller' wins.",
+                model=model
+            )
+            verdicts.append(verdict)
+        
+        # Majority vote
+        final_verdict = majority_vote(verdicts)
+        
+        # 3. On-chain audit trail
+        self.audit_log.append({
+            "prompt_hash": hash(safe_desc),
+            "verdicts": verdicts,
+            "final": final_verdict
+        })
+        
+        if final_verdict == "seller":
+            self.release_to_seller()
+        else:
+            self.refund_to_buyer()
+
+    # ... rest of methods
+```
+
+**Key Improvements:**
+- Input sanitization
+- Multi-model consensus
+- Structured output prompting
+- Full audit logging
+- Deterministic fallback possible for critical sections.
 ---
 
 ## 6. Implementation Roadmap
@@ -129,6 +191,12 @@ Traditional contracts are deterministic. GenLayer contracts are **probabilistic 
 ## 7. Conclusion
 
 GenLayer has immense potential to become the foundation for AI-native decentralized applications. By proactively addressing these AI-blockchain specific risks, the foundation can set a new standard for secure intelligent systems.
+
+## Contents
+- [Full Report](./genlayer_security_analysis.md)
+- Vulnerable & Hardened Intelligent Contract examples (Python/GenLayer)
+- Analysis of attack vectors
+- Protocol improvement proposals
 
 This contribution is submitted in good faith to support the growth of the GenLayer ecosystem.
 
