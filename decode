@@ -1,0 +1,7 @@
+ls -la
+
+which pandoc || echo 
+
+apt update && apt install -y pandoc texlive || echo 
+
+pandoc genlayer_security_analysis.md -o genlayer_security_analysis.pdf --pdf-engine=xelatex || pandoc genlayer_security_analysis.md -o genlayer_security_analysis.pdf
